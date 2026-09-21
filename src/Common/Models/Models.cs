@@ -23,6 +23,7 @@ public sealed class TitleBlockDefinition
     public LocalRectangle PhaseRegion { get; set; } = new();
     public LocalRectangle Info1Region { get; set; } = new();
     public LocalRectangle Info2Region { get; set; } = new();
+    public LocalRectangle StampRegion { get; set; } = new();
     public DateTime CreatedAt { get; set; } = DateTime.Now;
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
 }
@@ -76,6 +77,8 @@ public sealed class LocalRectangle
 
 public sealed class PlotJob
 {
+    public double[]? StampWorldCorners { get; set; }
+    public string StampImagePath { get; set; } = "";
     public bool Selected { get; set; } = true;
     public bool IsManualWindow { get; set; }
     public string SourceFile { get; set; } = "";

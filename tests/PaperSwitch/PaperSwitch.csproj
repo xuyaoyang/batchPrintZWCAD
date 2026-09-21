@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><TargetFramework>net48</TargetFramework><OutputType>Exe</OutputType><LangVersion>latest</LangVersion><PluginDll Condition="'$(PluginDll)' == ''">../../bin-stamp/BatchPlotter.dll</PluginDll></PropertyGroup>
+ <ItemGroup><Reference Include="TestPlugin"><HintPath>$(PluginDll)</HintPath></Reference></ItemGroup>
+</Project>

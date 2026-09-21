@@ -2,8 +2,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:ZwcadBatchPlot"
         x:Class="ZwcadBatchPlot.RectangleBatchPlotForm"
-        Title="LA通用型批量打印 V1.15.7.5"
-        Width="900" Height="520"
+        Title="LA通用型批量打印 · 修订4"
+        Width="1160" Height="570"
         MinWidth="720" MinHeight="460"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
@@ -30,6 +30,8 @@
 
         <!-- 底部快捷设置栏 -->
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="8,3,0,3">
+            <Button Content="命名、排序" Click="NamingSettings_Click" Style="{StaticResource PluginButtonStyle}" Margin="0,0,4,0" />
+            <Button Content="小图框过滤" Click="FilterSettings_Click" Style="{StaticResource PluginButtonStyle}" Margin="0,0,4,0" />
             <Button x:Name="_scaleSettingsBtn" Content="比例设置" MinWidth="76"
                     Style="{StaticResource PluginButtonStyle}" Margin="0,0,4,0"
                     Click="ScaleSettings_Click"
@@ -205,7 +207,7 @@
                 <DataGridTextColumn Header="文件名" Binding="{Binding FileName}"
                                     Width="*" MinWidth="170" IsReadOnly="True"
                                     SortMemberPath="FileName" />
-                <DataGridTemplateColumn Header="纸张尺寸 / 比例" Width="*" MinWidth="200" SortMemberPath="PaperChoice" CanUserSort="True">
+                <DataGridTemplateColumn Header="纸张尺寸 / 比例" Width="245" MinWidth="200" SortMemberPath="PaperChoice" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <ComboBox ItemsSource="{Binding PaperOptions}"
@@ -215,6 +217,9 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                <DataGridTextColumn Header="打印比例" Binding="{Binding Scale}" Width="85" IsReadOnly="True" />
+                <DataGridTextColumn Header="图面尺寸" Binding="{Binding FrameSize}" Width="115" IsReadOnly="True" />
+                <DataGridTextColumn Header="备注" Binding="{Binding Note}" Width="120" IsReadOnly="True" />
             </DataGrid.Columns>
             <DataGrid.ContextMenu>
                 <ContextMenu>

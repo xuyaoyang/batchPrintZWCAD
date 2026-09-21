@@ -23,6 +23,7 @@ public sealed class FieldBoxSelectInitialState
     public LocalRectangle PhaseRegion { get; set; } = new();
     public LocalRectangle Info1Region { get; set; } = new();
     public LocalRectangle Info2Region { get; set; } = new();
+    public LocalRectangle StampRegion { get; set; } = new();
     public string PaperName { get; set; } = "";
     public double PaperWidthMm { get; set; }
     public double PaperHeightMm { get; set; }
@@ -65,6 +66,8 @@ public sealed class FieldBoxSelectDialog : Form
     public LocalRectangle PhaseRegion { get; private set; } = new();
     public LocalRectangle Info1Region { get; private set; } = new();
     public LocalRectangle Info2Region { get; private set; } = new();
+    public LocalRectangle StampRegion { get; private set; } = new();
+    private readonly Label _stampStatus;
 
     // 纸张设置与矩形框批打共用同一候选识别策略；下拉项直接对应完整纸张结果，
     // 避免名称、物理尺寸和比例被分别修改后彼此不一致。
@@ -108,9 +111,9 @@ public sealed class FieldBoxSelectDialog : Form
             new Point3d(worldFrame.MaxX, worldFrame.MaxY, 0));
 
         Text = "设置图框字段与纸张";
-        UiLayout.ConfigureForm(this, 460, 488, 430, 462);
+        UiLayout.ConfigureForm(this, 460, 522, 430, 496);
         // 套用已有图框（略高以容纳状态提示）+ 打印范围 + 纸张各一行。
-        ClientSize = new Size(UiLayout.Scale(460), UiLayout.Scale(466));
+        ClientSize = new Size(UiLayout.Scale(460), UiLayout.Scale(500));
         FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
         ShowInTaskbar = false;
         // 非模态核对红框时保持可见，不挡 CAD 缩放/平移。
@@ -125,15 +128,15 @@ public sealed class FieldBoxSelectDialog : Form
         table.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
-        // Row 0: 套用已有图框（略高）；Row 1: 打印范围；Row 2-8: 字段；Row 9: 纸张
+        // Row 0: 模板；Row 1: 打印范围；Row 2-8: 字段；Row 9: 签章；Row 10: 纸张
         table.RowStyles.Add(new RowStyle(SizeType.Absolute, UiLayout.Scale(52)));
-        for (var i = 1; i < 10; i++)
+        for (var i = 1; i < 11; i++)
         {
             table.RowStyles.Add(new RowStyle(SizeType.Absolute, UiLayout.Scale(34)));
         }
-        // Row 10: 提示
+        // Row 11: 提示
         table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        // Row 11: 按钮
+        // Row 12: 按钮
         table.RowStyles.Add(new RowStyle(SizeType.Absolute, UiLayout.Scale(36)));
 
         table.Controls.Add(MakeLabel("套用已有图框"), 0, 0);
@@ -178,14 +181,18 @@ public sealed class FieldBoxSelectDialog : Form
         _info2Status = MakeStatusLabel();
         table.Controls.Add(MakeFieldRow(_info2Status, SelectInfo2, ClearInfo2), 1, 8);
 
+        table.Controls.Add(MakeLabel("签章区域"), 0, 9);
+        _stampStatus = MakeStatusLabel();
+        table.Controls.Add(MakeFieldRow(_stampStatus, SelectStamp, ClearStamp), 1, 9);
+
         if (initialState != null)
         {
             ApplyInitialState(initialState);
         }
 
         // 纸张：默认按打印范围自动识别，重新框选打印范围时同步刷新，也可手动修改。
-        table.Controls.Add(MakeLabel("纸张"), 0, 9);
-        table.Controls.Add(MakePaperRow(), 1, 9);
+        table.Controls.Add(MakeLabel("纸张"), 0, 10);
+        table.Controls.Add(MakePaperRow(), 1, 10);
         ApplyPaperOptions(
             paperOptions,
             initialState?.PaperName,
@@ -203,7 +210,7 @@ public sealed class FieldBoxSelectDialog : Form
             Font = new Font(Font.FontFamily, Math.Max(Font.Size - 1, 7))
         };
         table.SetColumnSpan(hint, 2);
-        table.Controls.Add(hint, 0, 10);
+        table.Controls.Add(hint, 0, 11);
 
         // 按钮
         var buttons = new FlowLayoutPanel
@@ -238,6 +245,7 @@ public sealed class FieldBoxSelectDialog : Form
             ClearOptionalField("设计阶段", r => PhaseRegion = r, _phaseStatus);
             ClearOptionalField("信息1", r => Info1Region = r, _info1Status);
             ClearOptionalField("信息2", r => Info2Region = r, _info2Status);
+            ClearStamp();
             DialogResult = DialogResult.OK;
             Close();
         };
@@ -248,7 +256,7 @@ public sealed class FieldBoxSelectDialog : Form
         buttons.Controls.Add(skip);
         buttons.Controls.Add(cancel);
         table.SetColumnSpan(buttons, 2);
-        table.Controls.Add(buttons, 0, 11);
+        table.Controls.Add(buttons, 0, 12);
 
         Controls.Add(table);
     }
@@ -440,6 +448,7 @@ public sealed class FieldBoxSelectDialog : Form
             ApplyConvertedField("设计阶段", template.PhaseRegion, mode, frame, r => PhaseRegion = r, _phaseStatus);
             ApplyConvertedField("信息1", template.Info1Region, mode, frame, r => Info1Region = r, _info1Status);
             ApplyConvertedField("信息2", template.Info2Region, mode, frame, r => Info2Region = r, _info2Status);
+            ApplyConvertedField("签章", template.StampRegion ?? new LocalRectangle(), mode, frame, r => StampRegion = r, _stampStatus);
 
             EnsureAndSelectPaperFromTemplate(template);
             RefreshAllMarkers();
@@ -561,6 +570,7 @@ public sealed class FieldBoxSelectDialog : Form
         PhaseRegion = state.PhaseRegion;
         Info1Region = state.Info1Region;
         Info2Region = state.Info2Region;
+        StampRegion = state.StampRegion ?? new LocalRectangle();
 
         AddInitialField("图名", TitleRegion, _titleStatus);
         AddInitialField("图号", DrawingNumberRegion, _numberStatus);
@@ -569,6 +579,7 @@ public sealed class FieldBoxSelectDialog : Form
         AddInitialField("设计阶段", PhaseRegion, _phaseStatus);
         AddInitialField("信息1", Info1Region, _info1Status);
         AddInitialField("信息2", Info2Region, _info2Status);
+        AddInitialField("签章", StampRegion, _stampStatus);
     }
 
     private void AddInitialField(string fieldName, LocalRectangle region, Label statusLabel)
@@ -735,6 +746,9 @@ public sealed class FieldBoxSelectDialog : Form
 
     private void SelectInfo1() { if (TryBoxSelect("信息1", out var r)) { Info1Region = r; UpdateStatus(_info1Status, Info1Region); } }
     private void ClearInfo1() { ClearOptionalField("信息1", r => Info1Region = r, _info1Status); }
+
+    private void SelectStamp() { if (TryBoxSelect("签章", out var r)) { StampRegion = r; UpdateStatus(_stampStatus, StampRegion); } }
+    private void ClearStamp() { ClearOptionalField("签章", r => StampRegion = r, _stampStatus); }
 
     private void SelectInfo2() { if (TryBoxSelect("信息2", out var r)) { Info2Region = r; UpdateStatus(_info2Status, Info2Region); } }
     private void ClearInfo2() { ClearOptionalField("信息2", r => Info2Region = r, _info2Status); }

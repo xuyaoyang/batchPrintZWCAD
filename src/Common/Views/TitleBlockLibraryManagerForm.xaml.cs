@@ -753,6 +753,7 @@ public sealed partial class TitleBlockLibraryManagerForm : Window
         private double _info2MinY;
         private double _info2MaxX;
         private double _info2MaxY;
+        public LocalRectangle StampRegion { get; set; } = new();
         private DateTime _createdAt;
         private DateTime _updatedAt;
         private bool _presentInDrawing;
@@ -856,6 +857,7 @@ public sealed partial class TitleBlockLibraryManagerForm : Window
                 Info2MinY = definition.Info2Region.MinY,
                 Info2MaxX = definition.Info2Region.MaxX,
                 Info2MaxY = definition.Info2Region.MaxY,
+                StampRegion = definition.StampRegion ?? new LocalRectangle(),
                 CreatedAt = definition.CreatedAt,
                 UpdatedAt = definition.UpdatedAt
             };
@@ -879,6 +881,7 @@ public sealed partial class TitleBlockLibraryManagerForm : Window
                 PhaseRegion = LocalRectangle.FromPoints(PhaseMinX, PhaseMinY, PhaseMaxX, PhaseMaxY),
                 Info1Region = LocalRectangle.FromPoints(Info1MinX, Info1MinY, Info1MaxX, Info1MaxY),
                 Info2Region = LocalRectangle.FromPoints(Info2MinX, Info2MinY, Info2MaxX, Info2MaxY),
+                StampRegion = StampRegion,
                 CreatedAt = CreatedAt == default ? DateTime.Now : CreatedAt,
                 UpdatedAt = DateTime.Now
             };

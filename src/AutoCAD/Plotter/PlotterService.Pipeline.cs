@@ -71,6 +71,7 @@ public static partial class PlotterService
             tr.Commit();
             WaitForPlotIdle();
             ValidatePlotOutput(job.OutputPath);
+            ApplyImageStamp(job, plot.Settings, plotDocument);
         }
         finally
         {

@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:ZwcadBatchPlot"
         x:Class="ZwcadBatchPlot.BatchPlotForm"
-        Title="LA图框块批量打印 V1.15.7.5"
+        Title="LA图框块批量打印 · 修订4 · 印章库"
         Width="900" Height="520"
         MinWidth="720" MinHeight="460"
         WindowStartupLocation="CenterScreen"
@@ -131,6 +131,12 @@
                         ToolTip="按输出格式打印 PDF/DWF、输出 PNG/JPG 或拆分为 DWG。" />
             </Grid>
 
+            <DockPanel Margin="0,4,0,3">
+                <CheckBox x:Name="_stampEnabled" Content="图片签章" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <Button Content="印章库…" Click="ChooseLibraryStamp_Click" DockPanel.Dock="Right" Style="{StaticResource PluginButtonStyle}" Margin="0,0,6,0" />
+                <Button x:Name="_chooseStamp" Content="选择图片…" Click="ChooseStamp_Click" DockPanel.Dock="Right" Style="{StaticResource PluginButtonStyle}" />
+                <TextBox x:Name="_stampPath" IsReadOnly="True" VerticalContentAlignment="Center" Margin="0,0,6,0" ToolTip="按图框库中的签章区域等比居中，仅用于 PDF/PNG/JPG；在图框库编辑中可补选区域。" />
+            </DockPanel>
             <!-- 保存路径行（原 pathRow） -->
             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                 <TextBlock Text="保存路径:" VerticalAlignment="Center" Margin="0,0,8,0" />

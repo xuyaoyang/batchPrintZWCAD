@@ -100,14 +100,16 @@ public static class CadMenuInstaller
             }
 
             // 打印功能菜单项
+            AddMenuItem(menu, "单张打印到文件", "ZBP_SINGLE_PLOT");
+            AddMenuItem(menu, "批打到文件(通用型)", "ZBP_RECTANGLE_BATCH_PLOT");
+            AddMenuItem(menu, "批打到文件(图框型)", "ZBP_SHOW_PANEL");
+            AddSeparator(menu);
             AddMenuItem(menu, "新增图框", "ZBP_ADD_TITLE_BLOCK");
-            AddMenuItem(menu, "图框库管理", "ZBP_MANAGE_LIBRARY");
-            AddMenuItem(menu, "批量打印(选图框块)", "ZBP_SHOW_PANEL");
-            AddMenuItem(menu, "通用型批量打印", "ZBP_RECTANGLE_BATCH_PLOT");
-            AddMenuItem(menu, "单张打印", "ZBP_SINGLE_PLOT");
+            AddMenuItem(menu, "图框信息库管理", "ZBP_MANAGE_LIBRARY");
+            AddMenuItem(menu, "印章库管理", "ZBP_STAMP_LIBRARY");
             AddSeparator(menu);
             // 工具类菜单项
-            AddMenuItem(menu, "设置", "ZBP_SETTINGS");
+            AddMenuItem(menu, "打印设置", "ZBP_SETTINGS");
             AddMenuItem(menu, "快捷键设置", "ZBP_SHORTCUT_SETTINGS");
             AddMenuItem(menu, "安装自动加载", "ZBP_INSTALL_AUTOLOAD");
             AddMenuItem(menu, "卸载自动加载", "ZBP_UNINSTALL_AUTOLOAD");

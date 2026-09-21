@@ -87,6 +87,8 @@ public sealed partial class BatchPlotForm : Window
 
         // 首次使用默认为关闭；之后恢复用户上一次操作，避免每次重复勾选。
         _mergePdfCheckBox.IsChecked = _settings.MergePdf;
+        _stampPath.Text = _settings.BlockStampImagePath;
+        _stampEnabled.IsChecked = _settings.BlockStampEnabled;
         _leaveMarginCheckBox.IsChecked = _settings.LeavePaperMargin;
         InitMarginCombo(_marginInput, 68, _settings.PaperMarginMm);
         _marginInput.IsEnabled = _leaveMarginCheckBox.IsChecked == true;
@@ -1943,6 +1945,7 @@ public sealed partial class BatchPlotForm : Window
             return;
         }
 
+        if (!ConfigureStamps(selected)) return;
         SaveCurrentSettings();
         SortAndRefreshOutputPaths();
         // 保存策略已经决定每张图的最终目录；合并 PDF 直接放到同一目录，
@@ -2083,6 +2086,8 @@ public sealed partial class BatchPlotForm : Window
 
     private void UpdateOutputFormatUi()
     {
+        _stampEnabled.IsEnabled = SupportsImageStamp;
+        _chooseStamp.IsEnabled = SupportsImageStamp;
         RefreshSavePathModeOptions(preserveSelection: true);
         if (!_outputDirectoryIsCustom)
         {
@@ -2414,6 +2419,7 @@ public sealed partial class BatchPlotForm : Window
 
     private void PreviewJob(PlotJob job)
     {
+        if (_stampEnabled.IsChecked == true && SupportsImageStamp) { PreviewStampedJob(job); return; }
         // 预览必须使用当前输出格式对应的绘图器，确保纸张、旋转和实际输出效果一致。
         var device = SelectedPlotDevice;
         var style = PlotStyleManager.ResolveJobStyle(job, _styleCombo.SelectedItem?.ToString() ?? "");
@@ -2606,6 +2612,7 @@ public sealed partial class BatchPlotForm : Window
             _settings.LastStyleSheet = style;
         }
         _settings.MergePdf = _mergePdfCheckBox.IsChecked == true;
+        _settings.BlockStampEnabled = _stampEnabled.IsChecked == true;
         _settings.LeavePaperMargin = _leaveMarginCheckBox.IsChecked == true;
         _settings.PaperMarginMm = ReadMarginValue(_marginInput);
         AppSettingsStore.Save(_settings);

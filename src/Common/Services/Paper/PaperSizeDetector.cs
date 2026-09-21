@@ -600,7 +600,7 @@ public static class PaperSizeDetector
 
     /// <summary>
     /// 矩形批打纸张候选：
-    /// 1) 比例库短边毫米匹配；
+    /// 1) 比例库短边毫米匹配，保留默认项并补齐标准 A 系列换算选项；
     /// 2) 失败则按长宽比命中图幅并反推任意比例，并展开同系列标准 A 图幅供改纸。
     /// </summary>
     public static IReadOnlyList<PaperDetection> DetectRectangleBatchCandidates(
@@ -611,7 +611,17 @@ public static class PaperSizeDetector
         var candidates = DetectCandidates(width, height, options);
         if (candidates.Count > 0)
         {
-            return candidates;
+            // 命中常用比例只决定默认项，不应限制用户能切换的纸张。
+            // 相邻 A 图幅需要约 sqrt(2) 的比例换算，通常不在比例库中。
+            // 保持所有原候选及其顺序，只追加缺少的标准 A 图幅；加长框不展开。
+            var expanded = ExpandStandardASeriesAspectCandidates(width, height, candidates);
+            var merged = candidates.ToList();
+            foreach (var paper in expanded)
+            {
+                if (!merged.Any(existing => string.Equals(existing.PaperName, paper.PaperName, StringComparison.OrdinalIgnoreCase)))
+                    merged.Add(paper);
+            }
+            return merged;
         }
 
         return DetectRectangleBatchAspectRatioCandidates(width, height);

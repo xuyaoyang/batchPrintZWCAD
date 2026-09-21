@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><TargetFramework>net9.0-windows</TargetFramework><OutputType>Exe</OutputType><UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><StartupObject>CoreProgram</StartupObject></PropertyGroup>
+ <ItemGroup>
+  <Compile Include="../PaperSwitch/Program.cs" />
+  <Reference Include="AcadBatchPlot.Core"><HintPath>../../bin-acad2025-2027/AcadBatchPlot.Core.dll</HintPath></Reference>
+  <PackageReference Include="PDFsharp" Version="6.2.4" />
+ </ItemGroup>
+</Project>

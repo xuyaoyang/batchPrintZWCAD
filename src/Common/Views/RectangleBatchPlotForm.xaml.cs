@@ -98,6 +98,8 @@ public sealed partial class RectangleBatchPlotForm : Window
         }
 
         public string Scale { get; private set; } = "";
+        public string FrameSize => Job.SizeText;
+        public string Note => Job.DetectionNote;
 
         /// <summary>编号列显示文本（1 基，随视图顺序刷新）。</summary>
         public string Number { get; private set; } = "";
@@ -106,6 +108,8 @@ public sealed partial class RectangleBatchPlotForm : Window
         {
             Scale = Job.ScaleText;
             OnPropertyChanged(nameof(Scale));
+            OnPropertyChanged(nameof(FrameSize));
+            OnPropertyChanged(nameof(Note));
             OnPropertyChanged(nameof(DrawingNumber));
             OnPropertyChanged(nameof(Title));
         }
@@ -122,6 +126,7 @@ public sealed partial class RectangleBatchPlotForm : Window
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
+    private List<Row> _unfilteredRows = new();
     private readonly Document _document;
     private readonly AppSettings _settings;
     private readonly TemporarySequenceOverlay _overlay;
@@ -213,6 +218,7 @@ public sealed partial class RectangleBatchPlotForm : Window
         }
 
         ReplaceBindingListContents(_rows, Array.Empty<Row>());
+        _unfilteredRows.Clear();
         ReplaceBindingListContents(_displayRows, Array.Empty<Row>());
         _scanSelectionIds = null;
         _lastScanScope = null;
@@ -290,6 +296,31 @@ public sealed partial class RectangleBatchPlotForm : Window
     private void ScaleSettings_Click(object sender, RoutedEventArgs e) => ShowSettingsAtTab(3);
 
     private void GeneralSettings_Click(object sender, RoutedEventArgs e) => ShowSettingsAtTab(0);
+
+    private void NamingSettings_Click(object sender, RoutedEventArgs e) => ShowListOptions(false);
+    private void FilterSettings_Click(object sender, RoutedEventArgs e) => ShowListOptions(true);
+    private void ShowListOptions(bool filterOnly)
+    {
+        if (!filterOnly && _hasAttributeIdentity) { ShowSettingsAtTab(1); return; }
+        var dialog = new RectangleListOptionsDialog(_settings, GetDocumentFileStem(), filterOnly);
+        if (ShowChildModalKeepingListVisible(dialog) != true) return;
+        if (filterOnly) _settings.RectangleSmallFramePercent = dialog.SmallFramePercent;
+        else
+        {
+            _settings.RectangleNamePrefix = dialog.Prefix;
+            _settings.RectangleNameSuffix = dialog.Suffix;
+            _settings.RectangleSequenceStart = dialog.Start;
+            _settings.RectangleSequenceDigits = dialog.Digits;
+            _settings.SortOrderHorizontalFirst = dialog.HorizontalFirst;
+        }
+        AppSettingsStore.Save(_settings);
+        if (filterOnly)
+        {
+            var retained = RectangleListOptions.KeepFrames(_unfilteredRows.Select(row => row.Job), _settings.RectangleSmallFramePercent);
+            ReplaceBindingListContents(_rows, _unfilteredRows.Where(row => retained.Contains(row.Job)).ToList());
+        }
+        SortRows();
+    }
 
         private void Grid_Sorting(object sender, DataGridSortingEventArgs e)
     {
@@ -585,8 +616,8 @@ public sealed partial class RectangleBatchPlotForm : Window
 
         if (append)
         {
-            var existingKeys = new HashSet<string>(_rows.Select(row => PlotJobIdentityKey(row.Job)), StringComparer.OrdinalIgnoreCase);
-            var merged = _rows.ToList();
+            var existingKeys = new HashSet<string>(_unfilteredRows.Select(row => PlotJobIdentityKey(row.Job)), StringComparer.OrdinalIgnoreCase);
+            var merged = _unfilteredRows.ToList();
             foreach (var row in rows)
             {
                 if (existingKeys.Add(PlotJobIdentityKey(row.Job)))
@@ -598,13 +629,18 @@ public sealed partial class RectangleBatchPlotForm : Window
             rows = merged;
         }
 
-        _hasAttributeIdentity = rows.Any(row =>
+        _unfilteredRows = rows.ToList();
+        var retained = RectangleListOptions.KeepFrames(rows.Select(row => row.Job), _settings.RectangleSmallFramePercent);
+        rows = rows.Where(row => retained.Contains(row.Job)).ToList();
+        // Filtering only controls visibility/printing. Keep the naming mode of the complete scan,
+        // so restoring a filtered attribute frame cannot turn its CAD fields into sequence numbers.
+        _hasAttributeIdentity = _unfilteredRows.Any(row =>
             !string.IsNullOrWhiteSpace(row.Job.CadDrawingNumber)
             || !string.IsNullOrWhiteSpace(row.Job.CadTitle));
         if (_hasAttributeIdentity)
         {
             // 进入属性命名模式后，图号/图名只保留识别结果，避免文件名规则混入 DWG 名或序号。
-            foreach (var row in rows)
+            foreach (var row in _unfilteredRows)
             {
                 row.Job.DrawingNumber = row.Job.CadDrawingNumber ?? "";
                 row.Job.Title = row.Job.CadTitle ?? "";
@@ -659,7 +695,9 @@ public sealed partial class RectangleBatchPlotForm : Window
             printIndex++;
             var stem = GetJobFileStem(_rows[i].Job, fallbackStem);
             _rows[i].Job.DrawingNumber = printIndex.ToString($"D{digits}");
-            _rows[i].FileName = $"{stem}{printIndex.ToString($"D{digits}")}{SelectedOutputExtension}";
+            _rows[i].FileName = RectangleListOptions.FileName(stem, _settings.RectangleNamePrefix,
+                _settings.RectangleNameSuffix, _settings.RectangleSequenceStart, printIndex - 1,
+                _settings.RectangleSequenceDigits, SelectedOutputExtension);
             _rows[i].RefreshFromJob();
         }
 
@@ -710,7 +748,9 @@ public sealed partial class RectangleBatchPlotForm : Window
             {
                 // 该框未识别到图号/图名：与整批无属性时一致，用 DWG 名 + 勾选序号。
                 var jobStem = GetJobFileStem(row.Job, stem);
-                baseName = $"{jobStem}{printIndex.ToString($"D{legacyDigits}")}";
+                baseName = RectangleListOptions.FileName(jobStem, _settings.RectangleNamePrefix,
+                    _settings.RectangleNameSuffix, _settings.RectangleSequenceStart, printIndex - 1,
+                    _settings.RectangleSequenceDigits, "");
             }
 
             var fullPath = FileNameSanitizer.MakeUnique(
@@ -1646,6 +1686,7 @@ public sealed partial class RectangleBatchPlotForm : Window
         foreach (var row in HighlightedRows())
         {
             _rows.Remove(row);
+            _unfilteredRows.Remove(row);
         }
         RefreshDisplayRows();
         RefreshFileNames();
@@ -1659,6 +1700,7 @@ public sealed partial class RectangleBatchPlotForm : Window
         {
             // 矩形框界面取消“打印”即表示从当前清单移除，避免列表编号和 CAD 红框编号不一致。
             _rows.Remove(row);
+            _unfilteredRows.Remove(row);
             removed = true;
         }
 

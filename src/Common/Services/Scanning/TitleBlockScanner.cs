@@ -550,6 +550,8 @@ public static class TitleBlockScanner
         // 与图框录入共用同一套最大闭合矩形/线包围盒规则，保证打印范围一致。
         var job = new PlotJob
         {
+            StampWorldCorners = definition.StampRegion?.HasArea() == true
+                ? ComputeWcsCorners(RegionCoordinateMode.Local, ResolveLocalRegion(definition.StampRegion, effectiveBlockTransform, coordinateMode, referenceFrame), effectiveBlockTransform) : null,
             SourceFile = sourceName,
             SpaceName = spaceName,
             IsPaperSpace = !layout.ModelType,

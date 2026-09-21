@@ -243,6 +243,7 @@ public sealed partial class BatchPlotCommands
             LocalRectangle phaseRegion;
             LocalRectangle info1Region;
             LocalRectangle info2Region;
+            LocalRectangle stampRegion;
             string paperName;
             double paperWidthMm;
             double paperHeightMm;
@@ -268,6 +269,7 @@ public sealed partial class BatchPlotCommands
                 phaseRegion = fieldDialog.PhaseRegion;
                 info1Region = fieldDialog.Info1Region;
                 info2Region = fieldDialog.Info2Region;
+                stampRegion = fieldDialog.StampRegion;
 
                 // 用户可能在对话框中重新框选了打印范围，读取最新值并重算世界坐标。
                 referenceFrame = fieldDialog.ReferenceFrame;
@@ -311,6 +313,7 @@ public sealed partial class BatchPlotCommands
                 // 信息1/信息2是用户自定义可选字段，未框选时保持空区域，后续命名会自动跳过空值。
                 Info1Region = info1Region.HasArea() ? (usesVariableLengthTemplate ? ToFrameRightBottomRelative(info1Region, referenceFrame) : ToFrameRelative(info1Region, referenceFrame)) : new LocalRectangle(),
                 Info2Region = info2Region.HasArea() ? (usesVariableLengthTemplate ? ToFrameRightBottomRelative(info2Region, referenceFrame) : ToFrameRelative(info2Region, referenceFrame)) : new LocalRectangle(),
+                StampRegion = stampRegion.HasArea() ? (usesVariableLengthTemplate ? ToFrameRightBottomRelative(stampRegion, referenceFrame) : ToFrameRelative(stampRegion, referenceFrame)) : new LocalRectangle(),
                 CreatedAt = now,
                 UpdatedAt = now
             };

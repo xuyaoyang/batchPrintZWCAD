@@ -274,8 +274,9 @@ public static class PdfRasterExport
     /// <param name="imagePath">用户看到的 png/jpg 路径。</param>
     /// <param name="dpi">本次转图像素密度，来自设置而不是写死值。</param>
     /// <param name="jpegQuality">JPG 编码质量，来自设置。</param>
-    private static void ConvertPdfToImage(string pdfPath, string imagePath, int dpi, int jpegQuality)
+    internal static void ConvertPdfToImage(string pdfPath, string imagePath, int dpi, int jpegQuality)
     {
+        EnsurePdfiumLoaded();
         if (string.IsNullOrWhiteSpace(pdfPath) || !File.Exists(pdfPath))
         {
             throw new FileNotFoundException("临时 PDF 不存在，无法转为图片。", pdfPath);

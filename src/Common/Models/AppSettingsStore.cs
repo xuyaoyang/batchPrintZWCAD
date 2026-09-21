@@ -51,6 +51,11 @@ public sealed class DirectoryColumnSetting
 
 public sealed class AppSettings
 {
+    public string RectangleNamePrefix { get; set; } = "";
+    public string RectangleNameSuffix { get; set; } = "";
+    public int RectangleSequenceStart { get; set; } = 1;
+    public int RectangleSequenceDigits { get; set; } = 2;
+    public double RectangleSmallFramePercent { get; set; }
     public string LastPlotDevice { get; set; } = "";
     public string LastStyleSheet { get; set; } = "";
     public double PaperMatchToleranceMm { get; set; } = 1.0;
@@ -68,6 +73,8 @@ public sealed class AppSettings
     public bool HideFrameBoundaryWhenPlotting { get; set; } = false;
     public bool AddSequenceWhenPdfExists { get; set; } = false;
     /// <summary>记录批打印窗口上一次“合并 PDF”的勾选状态；首次使用默认为不勾选。</summary>
+    public string BlockStampImagePath { get; set; } = "";
+    public bool BlockStampEnabled { get; set; }
     public bool MergePdf { get; set; }
     /// <summary>合并 PDF 时，是否用每张图纸原始输出文件名创建一级书签。</summary>
     public bool UseFileNameAsPdfBookmark { get; set; }
@@ -537,6 +544,9 @@ public static class AppSettingsStore
     private static AppSettings LoadFrom(string path)
     {
         var json = File.ReadAllText(path);
-        return Normalize(JsonConvert.DeserializeObject<AppSettings>(json) ?? new AppSettings());
+        var settings = JsonConvert.DeserializeObject<AppSettings>(json) ?? new AppSettings();
+        if (Newtonsoft.Json.Linq.JObject.Parse(json).Property(nameof(AppSettings.RectangleSequenceDigits)) == null)
+            settings.RectangleSequenceDigits = Math.Max(1, settings.FileNameSequenceDigits);
+        return Normalize(settings);
     }
 }

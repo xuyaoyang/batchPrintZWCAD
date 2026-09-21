@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><TargetFramework>net48</TargetFramework><LangVersion>latest</LangVersion><PlatformTarget>x64</PlatformTarget><UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms></PropertyGroup>
+ <ItemGroup>
+  <Reference Include="BatchPlotter"><HintPath Condition="'$(PluginDll)' == ''">../../bin-stamp/BatchPlotter.dll</HintPath><HintPath Condition="'$(PluginDll)' != ''">$(PluginDll)</HintPath></Reference>
+  <Reference Include="PdfSharp"><HintPath>../../bin-stamp/PdfSharp.dll</HintPath></Reference>
+  <Reference Include="Newtonsoft.Json"><HintPath>../../bin-stamp/Newtonsoft.Json.dll</HintPath></Reference>
+  <PackageReference Include="ZWCad.Net.2025" Version="1.0.0" ExcludeAssets="runtime" />
+ </ItemGroup>
+</Project>

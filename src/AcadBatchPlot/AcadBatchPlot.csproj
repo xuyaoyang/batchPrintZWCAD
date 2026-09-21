@@ -12,6 +12,7 @@
     <InformationalVersion>1.15.7.5</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <AssemblyName>AcadBatchPlot</AssemblyName>
+    <AssemblyName Condition="'$(ValidationAssemblyName)' != ''">$(ValidationAssemblyName)</AssemblyName>
     <RootNamespace>ZwcadBatchPlot</RootNamespace>
     <DefineConstants>$(DefineConstants);AUTOCAD</DefineConstants>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>

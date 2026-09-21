@@ -95,6 +95,7 @@ public static class TitleBlockLibraryStore
             existing.PhaseRegion = definition.PhaseRegion;
             existing.Info1Region = definition.Info1Region;
             existing.Info2Region = definition.Info2Region;
+            existing.StampRegion = definition.StampRegion;
             existing.UpdatedAt = DateTime.Now;
         }
 
@@ -120,6 +121,7 @@ public static class TitleBlockLibraryStore
             definition.PhaseRegion = HasArea(definition.PhaseRegion) ? ToFrameRelative(definition.PhaseRegion, definition.PrintRegion) : definition.PhaseRegion;
             definition.Info1Region = HasArea(definition.Info1Region) ? ToFrameRelative(definition.Info1Region, definition.PrintRegion) : definition.Info1Region;
             definition.Info2Region = HasArea(definition.Info2Region) ? ToFrameRelative(definition.Info2Region, definition.PrintRegion) : definition.Info2Region;
+            definition.StampRegion = definition.StampRegion != null && HasArea(definition.StampRegion) ? ToFrameRelative(definition.StampRegion, definition.PrintRegion) : new LocalRectangle();
             definition.CoordinateMode = "Frame";
         }
     }

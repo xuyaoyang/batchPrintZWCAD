@@ -152,6 +152,13 @@ public sealed partial class BatchPlotCommands : IExtensionApplication
         CadDialog.ShowModal(form);
     }
 
+    [CommandMethod("ZBP_STAMP_LIBRARY", CommandFlags.Session)]
+    public void ManageImageStamps()
+    {
+        try { CadDialog.ShowModal(new ImageStampLibraryDialog()); }
+        catch (System.Exception ex) { System.Windows.MessageBox.Show(ex.Message, "印章库"); }
+    }
+
     [CommandMethod("_ZBP_INTERNAL_MANAGE_LIBRARY", CommandFlags.Session)]
     public void ManageLibraryLegacy() => ManageLibrary();
 

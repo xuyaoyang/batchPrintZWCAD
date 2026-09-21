@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><TargetFramework>net48</TargetFramework><LangVersion>latest</LangVersion><PlatformTarget>x64</PlatformTarget><UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><DefineConstants>AUTOCAD</DefineConstants></PropertyGroup>
+ <ItemGroup>
+  <Compile Include="../StampSmoke/Commands.cs" />
+  <Reference Include="AcadBatchPlot"><HintPath Condition="'$(PluginDll)' == ''">../../bin-acad/AcadBatchPlot.dll</HintPath><HintPath Condition="'$(PluginDll)' != ''">$(PluginDll)</HintPath></Reference>
+  <Reference Include="PdfSharp"><HintPath>../../bin-acad/PdfSharp.dll</HintPath></Reference>
+  <Reference Include="Newtonsoft.Json"><HintPath>../../bin-acad/Newtonsoft.Json.dll</HintPath></Reference>
+  <PackageReference Include="AutoCAD.NET" Version="20.0.1" ExcludeAssets="runtime" />
+ </ItemGroup>
+</Project>

@@ -105,6 +105,7 @@ public sealed partial class BatchPlotCommands
                 PhaseRegion = ResolveEditFieldRegion(existing.PhaseRegion, mode, referenceFrame, inverse),
                 Info1Region = ResolveEditFieldRegion(existing.Info1Region, mode, referenceFrame, inverse),
                 Info2Region = ResolveEditFieldRegion(existing.Info2Region, mode, referenceFrame, inverse),
+                StampRegion = ResolveEditFieldRegion(existing.StampRegion ?? new LocalRectangle(), mode, referenceFrame, inverse),
                 PaperName = existing.PaperName,
                 PaperWidthMm = existing.PaperWidthMm,
                 PaperHeightMm = existing.PaperHeightMm
@@ -182,6 +183,7 @@ public sealed partial class BatchPlotCommands
                 PhaseRegion = ToOptionalStoredFrameRelative(dialog.PhaseRegion, referenceFrame, usesVariableLengthTemplate),
                 Info1Region = ToOptionalStoredFrameRelative(dialog.Info1Region, referenceFrame, usesVariableLengthTemplate),
                 Info2Region = ToOptionalStoredFrameRelative(dialog.Info2Region, referenceFrame, usesVariableLengthTemplate),
+                StampRegion = ToOptionalStoredFrameRelative(dialog.StampRegion, referenceFrame, usesVariableLengthTemplate),
                 CreatedAt = existing.CreatedAt == default ? now : existing.CreatedAt,
                 UpdatedAt = now
             };

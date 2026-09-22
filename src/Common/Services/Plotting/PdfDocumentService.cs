@@ -123,11 +123,7 @@ public static class PdfDocumentService
             }
 
             Validate(temporaryOutput);
-            if (File.Exists(fullOutputPath))
-            {
-                File.Delete(fullOutputPath);
-            }
-
+            // 计划阶段已避开重名；若打印期间出现同名文件，也不能删除已有版本。
             File.Move(temporaryOutput, fullOutputPath);
         }
         finally
@@ -144,7 +140,7 @@ public static class PdfDocumentService
         string requestedOutputPath,
         bool groupByPaperSize)
     {
-        return PlanMerges(inputs, requestedOutputPath, groupByPaperSize, avoidExistingFiles: false);
+        return PlanMerges(inputs, requestedOutputPath, groupByPaperSize, avoidExistingFiles: true);
     }
 
     public static IReadOnlyList<PdfMergePlan> PlanMerges(

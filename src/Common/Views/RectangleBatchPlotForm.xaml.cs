@@ -1760,6 +1760,12 @@ public sealed partial class RectangleBatchPlotForm : Window
         string? temporaryDirectory = null;
         var mergedOutput = Path.Combine(directory, SourceStem() + ".pdf");
         var mergePdf = IsPdfOutput && _mergePdf.IsChecked == true;
+        if (mergePdf)
+        {
+            var chosenPath = MergedPdfSaveDialog.Choose(mergedOutput);
+            if (chosenPath == null) return;
+            mergedOutput = chosenPath;
+        }
         var mergedOutputPaths = new List<string>();
         var completed = 0;
         var printLogLines = new List<string>();
@@ -1880,7 +1886,7 @@ public sealed partial class RectangleBatchPlotForm : Window
                     mergeInputs,
                     mergedOutput,
                     _settings.MergePdfByPaperSize,
-                    _settings.AddSequenceWhenPdfExists);
+                    avoidExistingFiles: true);
                 foreach (var mergePlan in mergePlans)
                 {
                     PdfDocumentService.Merge(

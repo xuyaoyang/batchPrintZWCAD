@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net48</TargetFramework><OutputType>Exe</OutputType><UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms><LangVersion>latest</LangVersion></PropertyGroup>
+  <ItemGroup><Reference Include="AcadBatchPlot"><HintPath>../../bin-acad/AcadBatchPlot.dll</HintPath></Reference><Reference Include="PdfSharp"><HintPath>../../bin-acad/PdfSharp.dll</HintPath></Reference></ItemGroup>
+</Project>
+

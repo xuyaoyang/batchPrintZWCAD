@@ -1948,11 +1948,13 @@ public sealed partial class BatchPlotForm : Window
         if (!ConfigureStamps(selected)) return;
         SaveCurrentSettings();
         SortAndRefreshOutputPaths();
-        // 保存策略已经决定每张图的最终目录；合并 PDF 直接放到同一目录，
-        // 并使用源 CAD 文件名，不再重复询问用户保存位置。
-        _mergedOutputPath = IsPdfOutput && _mergePdfCheckBox.IsChecked == true
-            ? GetAutomaticMergedOutputPath(selected)
-            : "";
+        _mergedOutputPath = "";
+        if (IsPdfOutput && _mergePdfCheckBox.IsChecked == true)
+        {
+            var chosenPath = MergedPdfSaveDialog.Choose(GetAutomaticMergedOutputPath(selected));
+            if (chosenPath == null) return;
+            _mergedOutputPath = chosenPath;
+        }
         foreach (var directory in selected
                      .Select(job => Path.GetDirectoryName(job.OutputPath))
                      .Where(path => !string.IsNullOrWhiteSpace(path))
@@ -2239,7 +2241,7 @@ public sealed partial class BatchPlotForm : Window
                         mergeInputs,
                         _mergedOutputPath,
                         _settings.MergePdfByPaperSize,
-                        _settings.AddSequenceWhenPdfExists);
+                        avoidExistingFiles: true);
                     foreach (var mergePlan in mergePlans)
                     {
                         PdfDocumentService.Merge(

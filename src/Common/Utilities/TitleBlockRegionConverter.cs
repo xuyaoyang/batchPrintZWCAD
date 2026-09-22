@@ -16,7 +16,8 @@ public static class TitleBlockRegionConverter
     public static LocalRectangle FromStoredRelative(
         LocalRectangle storedRegion,
         LocalRectangle referenceFrame,
-        string? coordinateMode)
+        string? coordinateMode,
+        LocalRectangle? recordedFrame = null)
     {
         if (!storedRegion.HasArea())
         {
@@ -25,7 +26,7 @@ public static class TitleBlockRegionConverter
 
         if (string.Equals(coordinateMode, "Frame", StringComparison.OrdinalIgnoreCase))
         {
-            return FromFrameRelative(storedRegion, referenceFrame);
+            return FromFrameRelative(storedRegion, referenceFrame, recordedFrame);
         }
 
         if (string.Equals(
@@ -41,13 +42,28 @@ public static class TitleBlockRegionConverter
     }
 
     /// <summary>左下角锚点：相对打印框 MinX/MinY（固定图幅 Frame 模式）。</summary>
-    public static LocalRectangle FromFrameRelative(LocalRectangle relativeRegion, LocalRectangle referenceFrame)
+    public static LocalRectangle FromFrameRelative(LocalRectangle relativeRegion, LocalRectangle referenceFrame, LocalRectangle? recordedFrame = null)
     {
+        if (!relativeRegion.HasArea()) return new LocalRectangle();
+        var sx = recordedFrame?.HasArea() == true
+            ? (referenceFrame.MaxX - referenceFrame.MinX) / (recordedFrame.MaxX - recordedFrame.MinX) : 1d;
+        var sy = recordedFrame?.HasArea() == true
+            ? (referenceFrame.MaxY - referenceFrame.MinY) / (recordedFrame.MaxY - recordedFrame.MinY) : 1d;
         return LocalRectangle.FromPoints(
-            relativeRegion.MinX + referenceFrame.MinX,
-            relativeRegion.MinY + referenceFrame.MinY,
-            relativeRegion.MaxX + referenceFrame.MinX,
-            relativeRegion.MaxY + referenceFrame.MinY);
+            relativeRegion.MinX * sx + referenceFrame.MinX,
+            relativeRegion.MinY * sy + referenceFrame.MinY,
+            relativeRegion.MaxX * sx + referenceFrame.MinX,
+            relativeRegion.MaxY * sy + referenceFrame.MinY);
+    }
+
+    /// <summary>仅等比例外框使用实时尺寸；不同长宽比的手动打印范围保持原定义。
+    /// 两个矩形均在块定义坐标内，插入比例/旋转由调用方的 BlockTransform 处理一次。</summary>
+    public static bool IsProportionalFrame(LocalRectangle recorded, LocalRectangle current)
+    {
+        if (!recorded.HasArea() || !current.HasArea()) return false;
+        var sx = (current.MaxX - current.MinX) / (recorded.MaxX - recorded.MinX);
+        var sy = (current.MaxY - current.MinY) / (recorded.MaxY - recorded.MinY);
+        return Math.Abs(sx - sy) <= Math.Max(sx, sy) * 0.005;
     }
 
     /// <summary>

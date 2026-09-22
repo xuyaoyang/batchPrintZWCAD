@@ -167,8 +167,8 @@ public static class CadTextUpdater
 
         var coordinateMode = GetCoordinateMode(definition);
         var referenceFrame = ResolveReferenceFrame(tr, definition, blockRef, coordinateMode);
-        var titleRegion = ResolveLocalRegion(definition.TitleRegion, blockRef.BlockTransform, coordinateMode, referenceFrame);
-        var numberRegion = ResolveLocalRegion(definition.DrawingNumberRegion, blockRef.BlockTransform, coordinateMode, referenceFrame);
+        var titleRegion = ResolveLocalRegion(definition.TitleRegion, blockRef.BlockTransform, coordinateMode, referenceFrame, definition.PrintRegion);
+        var numberRegion = ResolveLocalRegion(definition.DrawingNumberRegion, blockRef.BlockTransform, coordinateMode, referenceFrame, definition.PrintRegion);
 
         var changed = 0;
         if (newTitle != null)
@@ -299,8 +299,8 @@ public static class CadTextUpdater
         var byOriginalText = matches.FirstOrDefault(blockRef =>
         {
             var referenceFrame = ResolveReferenceFrame(tr, definition, blockRef, coordinateMode);
-            var titleRegion = ResolveLocalRegion(definition.TitleRegion, blockRef.BlockTransform, coordinateMode, referenceFrame);
-            var numberRegion = ResolveLocalRegion(definition.DrawingNumberRegion, blockRef.BlockTransform, coordinateMode, referenceFrame);
+            var titleRegion = ResolveLocalRegion(definition.TitleRegion, blockRef.BlockTransform, coordinateMode, referenceFrame, definition.PrintRegion);
+            var numberRegion = ResolveLocalRegion(definition.DrawingNumberRegion, blockRef.BlockTransform, coordinateMode, referenceFrame, definition.PrintRegion);
             return string.Equals(CadTextExtractor.ExtractRegionText(tr, blockRef, owner, numberRegion), job.CadDrawingNumber, StringComparison.Ordinal)
                 && string.Equals(CadTextExtractor.ExtractRegionText(tr, blockRef, owner, titleRegion), job.CadTitle, StringComparison.Ordinal);
         });
@@ -423,11 +423,11 @@ public static class CadTextUpdater
             : RegionCoordinateMode.Local;
     }
 
-    private static LocalRectangle ResolveLocalRegion(LocalRectangle region, Matrix3d blockTransform, RegionCoordinateMode mode, LocalRectangle referenceFrame)
+    private static LocalRectangle ResolveLocalRegion(LocalRectangle region, Matrix3d blockTransform, RegionCoordinateMode mode, LocalRectangle referenceFrame, LocalRectangle recordedFrame)
     {
         if (mode == RegionCoordinateMode.Frame)
         {
-            return OffsetRegion(region, referenceFrame.MinX, referenceFrame.MinY);
+            return TitleBlockRegionConverter.FromFrameRelative(region, referenceFrame, recordedFrame);
         }
 
         if (mode == RegionCoordinateMode.FrameRightBottomDynamic)
@@ -472,6 +472,12 @@ public static class CadTextUpdater
             return liveFrame;
         }
 
+        if (mode == RegionCoordinateMode.Frame
+            && BlockFrameGeometry.TryGetFrame(tr, blockRef.BlockTableRecord, out var currentFrame, out _)
+            && (!definition.PrintRegion.HasArea() || TitleBlockRegionConverter.IsProportionalFrame(definition.PrintRegion, currentFrame)))
+        {
+            return currentFrame;
+        }
         var blockFrame = TransformExtents(blockRef.GeometricExtents, blockRef.BlockTransform.Inverse());
         if (HasArea(definition.PrintRegion))
         {

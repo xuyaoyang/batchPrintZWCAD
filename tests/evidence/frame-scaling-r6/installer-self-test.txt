@@ -1,0 +1,2 @@
+PASS: embedded payload extraction; 3 platform dependencies; CAD detection and unsupported exclusion; .NET runtime routing; HKCU registration; repeat registration.
+No real CAD registry keys changed.

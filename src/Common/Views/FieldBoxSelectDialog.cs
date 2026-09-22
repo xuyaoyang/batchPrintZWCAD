@@ -441,14 +441,14 @@ public sealed class FieldBoxSelectDialog : Form
             var frame = ReferenceFrame;
             var mode = template.CoordinateMode;
 
-            ApplyConvertedField("图名", template.TitleRegion, mode, frame, r => TitleRegion = r, _titleStatus);
-            ApplyConvertedField("图号", template.DrawingNumberRegion, mode, frame, r => DrawingNumberRegion = r, _numberStatus);
-            ApplyConvertedField("日期", template.DateRegion, mode, frame, r => DateRegion = r, _dateStatus);
-            ApplyConvertedField("版次", template.RevisionRegion, mode, frame, r => RevisionRegion = r, _revisionStatus);
-            ApplyConvertedField("设计阶段", template.PhaseRegion, mode, frame, r => PhaseRegion = r, _phaseStatus);
-            ApplyConvertedField("信息1", template.Info1Region, mode, frame, r => Info1Region = r, _info1Status);
-            ApplyConvertedField("信息2", template.Info2Region, mode, frame, r => Info2Region = r, _info2Status);
-            ApplyConvertedField("签章", template.StampRegion ?? new LocalRectangle(), mode, frame, r => StampRegion = r, _stampStatus);
+            ApplyConvertedField("图名", template.TitleRegion, mode, frame, template.PrintRegion, r => TitleRegion = r, _titleStatus);
+            ApplyConvertedField("图号", template.DrawingNumberRegion, mode, frame, template.PrintRegion, r => DrawingNumberRegion = r, _numberStatus);
+            ApplyConvertedField("日期", template.DateRegion, mode, frame, template.PrintRegion, r => DateRegion = r, _dateStatus);
+            ApplyConvertedField("版次", template.RevisionRegion, mode, frame, template.PrintRegion, r => RevisionRegion = r, _revisionStatus);
+            ApplyConvertedField("设计阶段", template.PhaseRegion, mode, frame, template.PrintRegion, r => PhaseRegion = r, _phaseStatus);
+            ApplyConvertedField("信息1", template.Info1Region, mode, frame, template.PrintRegion, r => Info1Region = r, _info1Status);
+            ApplyConvertedField("信息2", template.Info2Region, mode, frame, template.PrintRegion, r => Info2Region = r, _info2Status);
+            ApplyConvertedField("签章", template.StampRegion ?? new LocalRectangle(), mode, frame, template.PrintRegion, r => StampRegion = r, _stampStatus);
 
             EnsureAndSelectPaperFromTemplate(template);
             RefreshAllMarkers();
@@ -466,6 +466,7 @@ public sealed class FieldBoxSelectDialog : Form
         LocalRectangle storedRegion,
         string? coordinateMode,
         LocalRectangle referenceFrame,
+        LocalRectangle recordedFrame,
         Action<LocalRectangle> setRegion,
         Label statusLabel)
     {
@@ -483,7 +484,7 @@ public sealed class FieldBoxSelectDialog : Form
         }
         else
         {
-            absolute = TitleBlockRegionConverter.FromStoredRelative(storedRegion, referenceFrame, coordinateMode);
+            absolute = TitleBlockRegionConverter.FromStoredRelative(storedRegion, referenceFrame, coordinateMode, recordedFrame);
         }
 
         setRegion(absolute);

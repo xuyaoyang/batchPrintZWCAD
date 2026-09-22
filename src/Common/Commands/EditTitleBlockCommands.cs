@@ -98,14 +98,14 @@ public sealed partial class BatchPlotCommands
 
             var initialState = new FieldBoxSelectInitialState
             {
-                TitleRegion = ResolveEditFieldRegion(existing.TitleRegion, mode, referenceFrame, inverse),
-                DrawingNumberRegion = ResolveEditFieldRegion(existing.DrawingNumberRegion, mode, referenceFrame, inverse),
-                DateRegion = ResolveEditFieldRegion(existing.DateRegion, mode, referenceFrame, inverse),
-                RevisionRegion = ResolveEditFieldRegion(existing.RevisionRegion, mode, referenceFrame, inverse),
-                PhaseRegion = ResolveEditFieldRegion(existing.PhaseRegion, mode, referenceFrame, inverse),
-                Info1Region = ResolveEditFieldRegion(existing.Info1Region, mode, referenceFrame, inverse),
-                Info2Region = ResolveEditFieldRegion(existing.Info2Region, mode, referenceFrame, inverse),
-                StampRegion = ResolveEditFieldRegion(existing.StampRegion ?? new LocalRectangle(), mode, referenceFrame, inverse),
+                TitleRegion = ResolveEditFieldRegion(existing.TitleRegion, mode, referenceFrame, inverse, existing.PrintRegion),
+                DrawingNumberRegion = ResolveEditFieldRegion(existing.DrawingNumberRegion, mode, referenceFrame, inverse, existing.PrintRegion),
+                DateRegion = ResolveEditFieldRegion(existing.DateRegion, mode, referenceFrame, inverse, existing.PrintRegion),
+                RevisionRegion = ResolveEditFieldRegion(existing.RevisionRegion, mode, referenceFrame, inverse, existing.PrintRegion),
+                PhaseRegion = ResolveEditFieldRegion(existing.PhaseRegion, mode, referenceFrame, inverse, existing.PrintRegion),
+                Info1Region = ResolveEditFieldRegion(existing.Info1Region, mode, referenceFrame, inverse, existing.PrintRegion),
+                Info2Region = ResolveEditFieldRegion(existing.Info2Region, mode, referenceFrame, inverse, existing.PrintRegion),
+                StampRegion = ResolveEditFieldRegion(existing.StampRegion ?? new LocalRectangle(), mode, referenceFrame, inverse, existing.PrintRegion),
                 PaperName = existing.PaperName,
                 PaperWidthMm = existing.PaperWidthMm,
                 PaperHeightMm = existing.PaperHeightMm
@@ -262,6 +262,12 @@ public sealed partial class BatchPlotCommands
             return liveFrame;
         }
 
+        if (mode == EditCoordinateMode.Frame
+            && BlockFrameGeometry.TryGetFrame(database, match.FrameDefinitionId, out var currentFrame, out _)
+            && (!definition.PrintRegion.HasArea() || TitleBlockRegionConverter.IsProportionalFrame(definition.PrintRegion, currentFrame)))
+        {
+            return currentFrame;
+        }
         if (definition.HasPrintRegion && definition.PrintRegion.HasArea())
         {
             return mode == EditCoordinateMode.World
@@ -290,7 +296,7 @@ public sealed partial class BatchPlotCommands
         LocalRectangle storedRegion,
         EditCoordinateMode mode,
         LocalRectangle referenceFrame,
-        Matrix3d inverse)
+        Matrix3d inverse, LocalRectangle recordedFrame)
     {
         if (!storedRegion.HasArea())
         {
@@ -299,7 +305,7 @@ public sealed partial class BatchPlotCommands
 
         if (mode == EditCoordinateMode.Frame)
         {
-            return TitleBlockRegionConverter.FromFrameRelative(storedRegion, referenceFrame);
+            return TitleBlockRegionConverter.FromFrameRelative(storedRegion, referenceFrame, recordedFrame);
         }
 
         if (mode == EditCoordinateMode.FrameRightBottomDynamic)

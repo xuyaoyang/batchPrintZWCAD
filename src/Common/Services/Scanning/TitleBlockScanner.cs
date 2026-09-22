@@ -382,22 +382,22 @@ public static class TitleBlockScanner
                 effectiveBlockTransform,
                 coordinateMode);
             extents = ResolveWorldExtents(definition, blockRef, effectiveBlockTransform, coordinateMode, referenceFrame);
-            titleRegion = ResolveLocalRegion(definition.TitleRegion, effectiveBlockTransform, coordinateMode, referenceFrame);
-            numberRegion = ResolveLocalRegion(definition.DrawingNumberRegion, effectiveBlockTransform, coordinateMode, referenceFrame);
+            titleRegion = ResolveLocalRegion(definition.TitleRegion, effectiveBlockTransform, coordinateMode, referenceFrame, definition.PrintRegion);
+            numberRegion = ResolveLocalRegion(definition.DrawingNumberRegion, effectiveBlockTransform, coordinateMode, referenceFrame, definition.PrintRegion);
             dateRegion = definition.DateRegion.HasArea()
-                ? ResolveLocalRegion(definition.DateRegion, effectiveBlockTransform, coordinateMode, referenceFrame)
+                ? ResolveLocalRegion(definition.DateRegion, effectiveBlockTransform, coordinateMode, referenceFrame, definition.PrintRegion)
                 : new LocalRectangle();
             revisionRegion = definition.RevisionRegion.HasArea()
-                ? ResolveLocalRegion(definition.RevisionRegion, effectiveBlockTransform, coordinateMode, referenceFrame)
+                ? ResolveLocalRegion(definition.RevisionRegion, effectiveBlockTransform, coordinateMode, referenceFrame, definition.PrintRegion)
                 : new LocalRectangle();
             phaseRegion = definition.PhaseRegion.HasArea()
-                ? ResolveLocalRegion(definition.PhaseRegion, effectiveBlockTransform, coordinateMode, referenceFrame)
+                ? ResolveLocalRegion(definition.PhaseRegion, effectiveBlockTransform, coordinateMode, referenceFrame, definition.PrintRegion)
                 : new LocalRectangle();
             info1Region = definition.Info1Region.HasArea()
-                ? ResolveLocalRegion(definition.Info1Region, effectiveBlockTransform, coordinateMode, referenceFrame)
+                ? ResolveLocalRegion(definition.Info1Region, effectiveBlockTransform, coordinateMode, referenceFrame, definition.PrintRegion)
                 : new LocalRectangle();
             info2Region = definition.Info2Region.HasArea()
-                ? ResolveLocalRegion(definition.Info2Region, effectiveBlockTransform, coordinateMode, referenceFrame)
+                ? ResolveLocalRegion(definition.Info2Region, effectiveBlockTransform, coordinateMode, referenceFrame, definition.PrintRegion)
                 : new LocalRectangle();
 
             // 嵌套匹配时 ResolveLocalRegion 返回的 region 处于内层块定义空间，
@@ -551,7 +551,7 @@ public static class TitleBlockScanner
         var job = new PlotJob
         {
             StampWorldCorners = definition.StampRegion?.HasArea() == true
-                ? ComputeWcsCorners(RegionCoordinateMode.Local, ResolveLocalRegion(definition.StampRegion, effectiveBlockTransform, coordinateMode, referenceFrame), effectiveBlockTransform) : null,
+                ? ComputeWcsCorners(RegionCoordinateMode.Local, ResolveLocalRegion(definition.StampRegion, effectiveBlockTransform, coordinateMode, referenceFrame, definition.PrintRegion), effectiveBlockTransform) : null,
             SourceFile = sourceName,
             SpaceName = spaceName,
             IsPaperSpace = !layout.ModelType,
@@ -966,11 +966,11 @@ public static class TitleBlockScanner
             : blockRef.GeometricExtents;
     }
 
-    private static LocalRectangle ResolveLocalRegion(LocalRectangle region, Matrix3d blockTransform, RegionCoordinateMode mode, LocalRectangle referenceFrame)
+    private static LocalRectangle ResolveLocalRegion(LocalRectangle region, Matrix3d blockTransform, RegionCoordinateMode mode, LocalRectangle referenceFrame, LocalRectangle recordedFrame)
     {
         if (mode == RegionCoordinateMode.Frame)
         {
-            return OffsetRegion(region, referenceFrame.MinX, referenceFrame.MinY);
+            return TitleBlockRegionConverter.FromFrameRelative(region, referenceFrame, recordedFrame);
         }
 
 
@@ -1028,6 +1028,13 @@ public static class TitleBlockScanner
             }
         }
 
+        // 固定模板可跨整体缩放的同名块使用，不能以包围盒仍有重叠为由冻结旧尺寸。
+        if (mode == RegionCoordinateMode.Frame
+            && BlockFrameGeometry.TryGetFrame(tr, frameDefinitionId, out var currentFrame, out _)
+            && (!hasSavedFrame || TitleBlockRegionConverter.IsProportionalFrame(definition.PrintRegion, currentFrame)))
+        {
+            return currentFrame;
+        }
         LocalRectangle blockFrame;
         try
         {

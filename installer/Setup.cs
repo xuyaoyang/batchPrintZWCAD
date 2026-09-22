@@ -87,7 +87,7 @@ internal static class Setup
     internal static string Install(List<CadTarget> targets)
     {
         // A fresh version directory also permits upgrades while CAD has an old DLL loaded.
-        string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LA BatchPlot", "20260922-R5-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+        string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LA BatchPlot", "20260922-R6-" + Guid.NewGuid().ToString("N").Substring(0, 8));
         Extract(folder);
         var done = new StringBuilder();
         foreach (var target in targets) {

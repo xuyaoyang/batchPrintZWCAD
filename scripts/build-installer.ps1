@@ -1,4 +1,4 @@
-﻿param([string]$OutputName = 'LA批量打印-修订4-安装程序.exe')
+﻿param([string]$OutputName = 'LA批量打印-修订5-安装程序.exe')
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $stage = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString('N'))

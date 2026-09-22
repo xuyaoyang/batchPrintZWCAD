@@ -141,6 +141,14 @@ public static class CadTextExtractor
             // Older CAD versions may not expose dynamic-block metadata reliably.
         }
 
+        // Some imported drawings retain INSERT entities without a block definition.
+        // They have no library identity; do not let one such entity abort the
+        // owner-space text cache (and blank every valid frame's fields).
+        if (definitionId.IsNull || !definitionId.IsValid || definitionId.IsErased)
+        {
+            return "";
+        }
+
         if (TitleBlockScanCaches.Active
             && TitleBlockScanCaches.BlockNames.TryGetValue(definitionId, out var cachedName))
         {

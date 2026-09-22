@@ -23,5 +23,5 @@ $process=Start-Process -FilePath $CoreConsole -ArgumentList ('/i "'+(Join-Path $
 while(!$process.WaitForExit(1000)){if((Get-Date)-$process.StartTime -gt [TimeSpan]::FromMinutes(3)){throw 'CAD host timeout; inspect host.log'}}
 $result=Get-Content (Join-Path $output 'scaling-result.json') -Raw | ConvertFrom-Json
 $failed=@($result | Where-Object {!$_.boundary -or !$_.fields -or !$_.stamp -or $_.error})
-if($result.Count -ne 12 -or $failed.Count){throw "Frame scaling regression failed: $($failed.Count)/$($result.Count)"}
-Write-Host 'PASS: 12 scale/insert/rotation cases; 36 boundary/text/stamp assertions'
+if($result.Count -ne 32 -or $failed.Count){throw "Frame scaling regression failed: $($failed.Count)/$($result.Count)"}
+Write-Host 'PASS: 32 polyline/line scale/insert/rotation cases; 96 boundary/text/stamp assertions'

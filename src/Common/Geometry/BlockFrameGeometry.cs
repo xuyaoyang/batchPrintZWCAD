@@ -154,7 +154,8 @@ internal static class BlockFrameGeometry
                     if (entity is Line or Polyline or Polyline2d or Polyline3d)
                     {
                         var transformedExtents = TransformExtents(entity.GeometricExtents, definitionToRoot);
-                        if (HasValidExtents(transformedExtents))
+                        // 单条水平/竖直边只有一个方向有长度，必须先合并再检查二维面积。
+                        if (HasFiniteExtents(transformedExtents))
                         {
                             lineExtents.Add(transformedExtents);
                         }
@@ -242,15 +243,19 @@ internal static class BlockFrameGeometry
         return result;
     }
 
-    private static bool HasValidExtents(Extents3d extents)
+    private static bool HasFiniteExtents(Extents3d extents)
     {
         return IsFinite(extents.MinPoint.X)
             && IsFinite(extents.MinPoint.Y)
             && IsFinite(extents.MaxPoint.X)
             && IsFinite(extents.MaxPoint.Y)
-            && extents.MaxPoint.X > extents.MinPoint.X
-            && extents.MaxPoint.Y > extents.MinPoint.Y;
+            && extents.MaxPoint.X >= extents.MinPoint.X
+            && extents.MaxPoint.Y >= extents.MinPoint.Y;
     }
+
+    private static bool HasValidExtents(Extents3d extents) => HasFiniteExtents(extents)
+        && extents.MaxPoint.X > extents.MinPoint.X
+        && extents.MaxPoint.Y > extents.MinPoint.Y;
 
     private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
 
